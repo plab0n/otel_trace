@@ -11,10 +11,10 @@ const {
 } = require('@opentelemetry/sdk-metrics');
 
 const sdk = new NodeSDK({
-  resource: new Resource({
-        [SemanticResourceAttributes.SERVICE_NAME]: 'adderservice',
-        [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0',
-  }),
+  // resource: new Resource({
+  //       [SemanticResourceAttributes.SERVICE_NAME]: 'adderservice',
+  //       [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0',
+  // }),
   traceExporter: new ConsoleSpanExporter(),
   metricReader: new PeriodicExportingMetricReader({
     exporter: new ConsoleMetricExporter(),

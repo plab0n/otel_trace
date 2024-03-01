@@ -9,15 +9,11 @@ function getRandomNumber(min, max) {
 }
 
 app.post('/add', (req, res) => {
-  console.log(req)
-  res.send()
-  return
   let a = req.body['a']
   let b = req.body['b']
   let sum = a + b
   res.send({"sum": sum})      
 });
 app.listen(PORT, () => {
-  console.log("Process ", process)
   console.log(`Listening for requests on http://localhost:${PORT}`);
 });
