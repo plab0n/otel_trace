@@ -9,17 +9,22 @@ const {
   PeriodicExportingMetricReader,
   ConsoleMetricExporter,
 } = require('@opentelemetry/sdk-metrics');
+const { Resource } = require('@opentelemetry/resources');
+const {
+  SemanticResourceAttributes,
+} = require('@opentelemetry/semantic-conventions');
 
 const sdk = new NodeSDK({
-  // resource: new Resource({
-  //       [SemanticResourceAttributes.SERVICE_NAME]: 'adderservice',
-  //       [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0',
-  // }),
+  resource: new Resource({
+        [SemanticResourceAttributes.SERVICE_NAME]: 'adderservice',
+        [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0',
+  }),
   traceExporter: new ConsoleSpanExporter(),
   metricReader: new PeriodicExportingMetricReader({
     exporter: new ConsoleMetricExporter(),
   }),
-  instrumentations: [getNodeAutoInstrumentations()],
+  //Note: Only require for auto instrumentation
+  //instrumentations: [getNodeAutoInstrumentations()],
 });
 
 sdk.start();
