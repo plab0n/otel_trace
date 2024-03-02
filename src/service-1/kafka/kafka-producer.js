@@ -11,8 +11,11 @@ const tracer = setupTracing('kafka-service');
 const producer = kafka.producer();
 
 async function sendMessageToKafka(message) {
+
    const parentSpan = tracer.startSpan('kafka-producer');
+
    console.log('🚀 ~ sendMessageToKafka ~ parentSpan:', parentSpan);
+
    try {
       await producer.connect();
 
@@ -30,6 +33,7 @@ async function sendMessageToKafka(message) {
       await producer.disconnect();
       console.log('Message sent to Kafka:', message);
    } catch (error) {
+      
       console.error('Error sending message to Kafka:', error);
    } finally {
       parentSpan.end();
