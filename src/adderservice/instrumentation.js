@@ -1,30 +1,39 @@
-/*instrumentation.js*/
-// Require dependencies
-const { NodeSDK } = require('@opentelemetry/sdk-node');
-const { ConsoleSpanExporter } = require('@opentelemetry/sdk-trace-node');
-const {
-  getNodeAutoInstrumentations,
-} = require('@opentelemetry/auto-instrumentations-node');
-const {
-  PeriodicExportingMetricReader,
-  ConsoleMetricExporter,
-} = require('@opentelemetry/sdk-metrics');
-const { Resource } = require('@opentelemetry/resources');
-const {
-  SemanticResourceAttributes,
-} = require('@opentelemetry/semantic-conventions');
 
-const sdk = new NodeSDK({
-  resource: new Resource({
-        [SemanticResourceAttributes.SERVICE_NAME]: 'adderservice',
-        [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0',
-  }),
-  traceExporter: new ConsoleSpanExporter(),
+const opentelemetry = require("@opentelemetry/sdk-node")
+const {getNodeAutoInstrumentations} = require("@opentelemetry/auto-instrumentations-node")
+const {OTLPTraceExporter} = require('@opentelemetry/exporter-trace-otlp-grpc')
+const {OTLPMetricExporter} = require('@opentelemetry/exporter-metrics-otlp-grpc')
+const {PeriodicExportingMetricReader} = require('@opentelemetry/sdk-metrics')
+const {alibabaCloudEcsDetector} = require('@opentelemetry/resource-detector-alibaba-cloud')
+const {awsEc2Detector, awsEksDetector} = require('@opentelemetry/resource-detector-aws')
+const {containerDetector} = require('@opentelemetry/resource-detector-container')
+const {gcpDetector} = require('@opentelemetry/resource-detector-gcp')
+const {envDetector, hostDetector, osDetector, processDetector} = require('@opentelemetry/resources')
+
+const sdk = new opentelemetry.NodeSDK({
+  traceExporter: new OTLPTraceExporter(),
+  instrumentations: [
+    getNodeAutoInstrumentations({
+      // only instrument fs if it is part of another trace
+      '@opentelemetry/instrumentation-fs': {
+        requireParentSpan: true,
+      },
+    })
+  ],
   metricReader: new PeriodicExportingMetricReader({
-    exporter: new ConsoleMetricExporter(),
+    exporter: new OTLPMetricExporter()
   }),
-  //Note: Only require for auto instrumentation
-  //instrumentations: [getNodeAutoInstrumentations()],
-});
+  resourceDetectors: [
+    containerDetector,
+    envDetector,
+    hostDetector,
+    osDetector,
+    processDetector,
+    alibabaCloudEcsDetector,
+    awsEksDetector,
+    awsEc2Detector,
+    gcpDetector
+  ],
+})
 
 sdk.start();

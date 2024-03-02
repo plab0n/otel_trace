@@ -1,0 +1,74 @@
+version: '3.8'
+
+networks:
+  default:
+    name: otel-trace
+    driver: bridge
+
+services:
+  adderservice:
+    image: ${IMAGE_NAME}:${BUILD_VERSION}-adderservice
+    container_name: adderservice
+    build:
+      context: ./
+      dockerfile: ./src/adderservice/Dockerfile
+      cache_from:
+        - ${IMAGE_NAME}:${BUILD_VERSION}-adderservice
+    deploy:
+      resources:
+        limits:
+          memory: 120M
+    restart: unless-stopped
+    ports:
+      - "${ADDER_SERVICE_PORT}"
+    environment:
+      - ADDER_SERVICE_PORT
+      - OTEL_EXPORTER_OTLP_ENDPOINT
+      - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+      - OTEL_RESOURCE_ATTRIBUTES
+      - OTEL_SERVICE_NAME=adderservice
+    depends_on:
+      otelcol:
+        condition: service_started
+
+  otelcol:
+    image: ${COLLECTOR_CONTRIB_IMAGE}
+    container_name: otel-col
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+    restart: unless-stopped
+    command: [ "--config=/etc/otelcol-config.yml", "--config=/etc/otelcol-config-extras.yml" ]
+    volumes:
+      - ./src/otelcollector/otelcol-config.yml:/etc/otelcol-config.yml
+      - ./src/otelcollector/otelcol-config-extras.yml:/etc/otelcol-config-extras.yml
+    ports:
+      - "${OTEL_COLLECTOR_PORT_GRPC}"
+      - "${OTEL_COLLECTOR_PORT_HTTP}"
+    depends_on:
+      - jaeger
+    # environment:
+    #   - ENVOY_PORT
+
+    
+  jaeger:
+    image: ${JAEGERTRACING_IMAGE}
+    container_name: jaeger
+    command:
+      - "--memory.max-traces=5000"
+      - "--query.base-path=/jaeger/ui"
+      # - "--prometheus.server-url=http://${PROMETHEUS_ADDR}"
+      - "--prometheus.query.normalize-calls=true"
+      - "--prometheus.query.normalize-duration=true"
+    deploy:
+      resources:
+        limits:
+          memory: 400M
+    restart: unless-stopped
+    ports:
+      - "${JAEGER_SERVICE_PORT}"         # Jaeger UI
+      - "${OTEL_COLLECTOR_PORT_GRPC}"
+    environment:
+      - METRICS_STORAGE_TYPE=prometheus
+    # logging: *logging
