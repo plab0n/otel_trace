@@ -25,6 +25,9 @@ async function getUsers(req, res) {
          'https://jsonplaceholder.typicode.com/users',
       );
       const users = response.data;
+      // setTimeout(() => {
+      //    res.json(users);
+      // }, 1000);
       res.json(users);
    } catch (error) {
       // Handle errors
@@ -32,6 +35,7 @@ async function getUsers(req, res) {
       res.status(500).json({ error: 'Internal Server Error' });
    }
 }
+
 
 module.exports = {
    createMessage,

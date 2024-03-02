@@ -6,15 +6,12 @@ const kafka = new Kafka({
    brokers: ['localhost:9092'],
 });
 
-const tracer = setupTracing('kafka-service');
+const tracer = setupTracing('main-trace');
 
 const producer = kafka.producer();
 
 async function sendMessageToKafka(message) {
-
-   const parentSpan = tracer.startSpan('kafka-producer');
-
-   console.log('🚀 ~ sendMessageToKafka ~ parentSpan:', parentSpan);
+   const postSpan = tracer.startSpan('kafka-producer');
 
    try {
       await producer.connect();
@@ -24,19 +21,19 @@ async function sendMessageToKafka(message) {
          messages: [
             {
                value: message,
-               headers: {
-                  parentSpan: `${parentSpan}`,
-               },
+               // headers: {
+               //    parentSpan: `${parentSpan}`,
+               // },
             },
          ],
       });
-      await producer.disconnect();
       console.log('Message sent to Kafka:', message);
    } catch (error) {
-      
       console.error('Error sending message to Kafka:', error);
+      throw error; // Propagate the error to the caller
    } finally {
-      parentSpan.end();
+      await producer.disconnect(); // Ensure disconnection even in case of error
+      postSpan.end();
    }
 }
 

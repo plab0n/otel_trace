@@ -27,6 +27,9 @@ const {
    DiagLogLevel,
    trace,
 } = require('@opentelemetry/api');
+const {
+   RedisInstrumentation,
+} = require('@opentelemetry/instrumentation-redis');
 const opentelemetry = require('@opentelemetry/api');
 
 
@@ -53,6 +56,7 @@ const setupTracing = (serviceName) => {
          new ExpressInstrumentation(),
          new HttpInstrumentation(),
          new MongooseInstrumentation(),
+         new RedisInstrumentation()
       ],
    });
 
