@@ -1,0 +1,44 @@
+version: '3.7'
+
+services:
+   # Kafka
+   kafka:
+      image: wurstmeister/kafka:latest
+      restart: always
+      ports:
+         - '9092:9092'
+      environment:
+         KAFKA_ADVERTISED_HOST_NAME: localhost
+         KAFKA_CREATE_TOPICS: 'topic1:1:1,topic2:1:1'
+         KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      volumes:
+         - ./volumns/kafka_data:/var/lib/kafka
+
+   # Zookeeper
+   zookeeper:
+      image: wurstmeister/zookeeper:latest
+      restart: always
+      ports:
+         - '2181:2181'
+      depends_on:
+         - kafka
+      volumes:
+         - ./volumns/zookeeper_data:/var/lib/zookeeper
+
+   # Mongodb
+   mongodb:
+      image: mongo:latest
+      restart: always
+      ports:
+         - '27017:27017'
+      volumes:
+         - ./volumns/mongodb_data:/data/db
+
+   # Redis
+   redis:
+      image: redis:latest
+      restart: always
+      ports:
+         - '6379:6379'
+      volumes:
+         - ./volumns/redis_data:/data
