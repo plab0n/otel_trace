@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const { mongodConnectDB } = require('./mongodb/mongodb-config');
 const { mongodbRoute } = require('./mongodb/mongo-route');
+const { client } = require('./redis/redis.config');
 
 dotenv.config();
 
@@ -24,9 +25,15 @@ require('./kafka/kafka-consumer');
 
 app.use('/api/v1', mongodbRoute);
 
+
+
+
 app.listen(PORT, () => {
    console.log(`Listening on http://localhost:${PORT}`);
    mongodConnectDB();
+   client.on('connect', () => {
+      console.log('Connected to Redis');
+   });
 });
 
 module.exports = app;
