@@ -16,6 +16,7 @@ app.use(express.json());
 
 app.use('/api/v1', kafkaRoute);
 
+
 app.get('/', (req, res) => {
    res.send('Hello World! I am a multiplier service.');
 });

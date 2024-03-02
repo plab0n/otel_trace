@@ -1,7 +1,5 @@
 const { Kafka } = require('kafkajs');
 const { createMessage } = require('../mongodb/message-controller');
-const opentelemetry = require('@opentelemetry/api');
-const { setupTracing } = require('../tracer');
 
 const kafka = new Kafka({
    clientId: 'my-app-1',
@@ -9,8 +7,6 @@ const kafka = new Kafka({
 });
 
 const consumer = kafka.consumer({ groupId: 'my-group' });
-
-const tracer = setupTracing('kafka-service');
 
 async function consumeMessages() {
    await consumer.connect();

@@ -8,6 +8,7 @@ async function fetchMessages() {
    return await Message.find();
 }
 
+
 module.exports = {
    saveMessage,
    fetchMessages,
