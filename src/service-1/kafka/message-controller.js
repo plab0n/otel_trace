@@ -1,6 +1,6 @@
 const { sendMessageToKafka } = require('./kafka-producer');
 const axios = require('axios');
-const { setupTracing } = require('../tracer');
+const { tracer } = require('../span');
 
 async function createMessage(req, res) {
    const { content } = req.body;
@@ -13,17 +13,14 @@ async function createMessage(req, res) {
    }
 }
 
-const tracer = setupTracing('user-trace');
+// const tracer = setupTracing('user-trace');
 
 // Get all users from the service-2
-async function getUsers(req, res) {
+async function getMessages(req, res) {
    const getSpan = tracer.startSpan('get-users-function');
    try {
-      const response = await axios.get(
-         'http://localhost:2000/api/v1/all-users',
-      );
-      const allUsers = response.data;
-      res.json(allUsers);
+      const response = await axios.get('http://localhost:2000/api/v1/messages');
+      res.json(response.data);
    } catch (error) {
       // Handle errors
       console.error('Error fetching all users:', error);
@@ -33,4 +30,4 @@ async function getUsers(req, res) {
    }
 }
 
-module.exports = { createMessage, getUsers };
+module.exports = { createMessage, getMessages };

@@ -1,12 +1,12 @@
 const { Kafka } = require('kafkajs');
-const { setupTracing } = require('../tracer.js');
+const { tracer } = require('../span.js');
 
 const kafka = new Kafka({
    clientId: 'my-app-1',
    brokers: ['localhost:9092'],
 });
 
-const tracer = setupTracing('main-trace');
+// const tracer = setupTracing('main-trace');
 
 const producer = kafka.producer();
 

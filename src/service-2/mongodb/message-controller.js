@@ -1,6 +1,6 @@
 const { client } = require('../redis/redis.config');
+const { setupTracing } = require('../tracer');
 const { saveMessage, fetchMessages } = require('./message-service');
-const axios = require('axios');
 
 async function createMessage(content) {
    try {
@@ -11,64 +11,30 @@ async function createMessage(content) {
    }
 }
 
+const tracer = setupTracing('service-2-trace');
+
 async function getMessages(req, res) {
-   try {
-      const messages = await fetchMessages();
-      res.json(messages);
-   } catch (error) {
-      res.status(500).json({ error: error.message });
-   }
-}
+   
+   const messageSpan = tracer.startSpan('get-messages');
 
-// async function getUsers(req, res) {
-//    try {
-//       const response = await axios.get(
-//          'https://jsonplaceholder.typicode.com/users',
-//       );
-//       const users = response.data;
-//       // setTimeout(() => {
-//       //    res.json(users);
-//       // }, 1000);
-//       res.json(users);
-//    } catch (error) {
-//       // Handle errors
-//       console.error('Error fetching users:', error);
-//       res.status(500).json({ error: 'Internal Server Error' });
-//    }
-// }
-
-async function cacheUsers() {
    try {
-      const response = await axios.get(
-         'https://jsonplaceholder.typicode.com/users',
-      );
-      const users = JSON.stringify(response.data); // Convert users data to JSON string
-      await client.set('users', users); // Save users data to Redis
-      console.log('Users data cached in Redis');
-   } catch (error) {
-      console.error('Error caching users in Redis:', error);
-   }
-}
-
-async function getUsers(req, res) {
-   try {
-      const cachedUsers = await client.get('users');
-      if (cachedUsers) {
-         console.log('Users data found in Redis');
-         res.json(JSON.parse(cachedUsers));
+      const cachedMessage = await client.get('message');
+      if (cachedMessage) {
+         console.log('Message data found in Redis, fetching from cache');
+         res.json(JSON.parse(cachedMessage));
       } else {
-         console.log('Users data not found in Redis, fetching from API');
-         const response = await axios.get(
-            'https://jsonplaceholder.typicode.com/users',
-         );
-         const users = response.data;
-         // await client.set('users', 5000, JSON.stringify(users));
-         await client.set('users', JSON.stringify(users), 'EX', 5);
-         res.json(users);
+         console.log('message data not found in Redis, fetching from API');
+
+         const messageALL = await fetchMessages();
+
+         await client.set('message', JSON.stringify(messageALL), 'EX', 5);
+         res.json(messageALL);
       }
    } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Error fetching message:', error);
       res.status(500).json({ error: 'Internal Server Error' });
+   } finally {
+      messageSpan.end();
    }
 }
 
@@ -89,7 +55,44 @@ async function deleteUser(req, res) {
 module.exports = {
    createMessage,
    getMessages,
-   getUsers,
-   cacheUsers,
    deleteUser,
 };
+
+// async function getMessages(req, res) {
+//    try {
+//       const messages = await fetchMessages();
+//       res.json(messages);
+//    } catch (error) {
+//       res.status(500).json({ error: error.message });
+//    }
+// }
+
+// async function getUsers(req, res) {
+//    try {
+//       const response = await axios.get(
+//          'https://jsonplaceholder.typicode.com/users',
+//       );
+//       const users = response.data;
+//       // setTimeout(() => {
+//       //    res.json(users);
+//       // }, 1000);
+//       res.json(users);
+//    } catch (error) {
+//       // Handle errors
+//       console.error('Error fetching users:', error);
+//       res.status(500).json({ error: 'Internal Server Error' });
+//    }
+// }
+
+// async function cacheUsers() {
+//    try {
+//       const response = await axios.get(
+//          'https://jsonplaceholder.typicode.com/users',
+//       );
+//       const users = JSON.stringify(response.data); // Convert users data to JSON string
+//       await client.set('users', users); // Save users data to Redis
+//       console.log('Users data cached in Redis');
+//    } catch (error) {
+//       console.error('Error caching users in Redis:', error);
+//    }
+// }

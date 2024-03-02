@@ -5,8 +5,8 @@ const mongodbRoute = express.Router();
 
 mongodbRoute.get('/messages', getMessages);
 
-mongodbRoute.get('/all-users', getUsers);
+// mongodbRoute.get('/all-users', getUsers);
 
-mongodbRoute.get('/deleteUser', deleteUser);
+// mongodbRoute.get('/deleteUser', deleteUser);
 
 module.exports = { mongodbRoute };

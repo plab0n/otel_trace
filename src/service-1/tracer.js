@@ -21,19 +21,19 @@ const {
    MongooseInstrumentation,
 } = require('@opentelemetry/instrumentation-mongoose');
 // const opentelemetry = require('@opentelemetry/api');
-const {
-   diag,
-   DiagConsoleLogger,
-   DiagLogLevel,
-   trace,
-} = require('@opentelemetry/api');
+// const {
+//    diag,
+//    DiagConsoleLogger,
+//    DiagLogLevel,
+//    trace,
+// } = require('@opentelemetry/api');
 const {
    RedisInstrumentation,
 } = require('@opentelemetry/instrumentation-redis');
 const opentelemetry = require('@opentelemetry/api');
 
 
-diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
+// diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 
 const setupTracing = (serviceName) => {
    const provider = new NodeTracerProvider({
