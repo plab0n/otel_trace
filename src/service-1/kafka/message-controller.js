@@ -17,7 +17,7 @@ async function createMessage(req, res) {
 
 // Get all users from the service-2
 async function getMessages(req, res) {
-   const getSpan = tracer.startSpan('get-users-function');
+   const getSpan = tracer.startSpan('get-messages');
    try {
       const response = await axios.get('http://localhost:2000/api/v1/messages');
       res.json(response.data);
